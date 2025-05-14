@@ -6,7 +6,6 @@ from time import time
 from uuid import uuid4
 from flask import Flask, request, jsonify
 
-
 class Blockchain:
     difficulty_target = "0000"
 
@@ -16,12 +15,20 @@ class Blockchain:
         self.current_transactions = []
         self.contracts = []
 
-        # Genesis block
-        genesis_hash = self.hash_block("hash_block_pertama")
-        self.append_block(
-            hash_of_previous_block=genesis_hash,
-            nonce=self.proof_of_work(0, genesis_hash, [])
-        )
+        # Buat folder untuk penyimpanan jika belum ada
+        os.makedirs("transaction_chain", exist_ok=True)
+        os.makedirs("transaction_log", exist_ok=True)
+
+        # Load chain dari file jika ada
+        self.load_chain()
+
+        # Jika chain kosong, buat genesis block
+        if not self.chain:
+            genesis_hash = self.hash_block("hash_block_pertama")
+            self.append_block(
+                hash_of_previous_block=genesis_hash,
+                nonce=self.proof_of_work(0, genesis_hash, [])
+            )
 
         # Smart contract: bonus transaksi besar
         def bonus_for_large_transaction(tx):
@@ -37,15 +44,12 @@ class Blockchain:
             if bonus > 0:
                 return [{
                     "sender": "0",
-                    "recipient": tx["sender"],  # Bonus ke pengirim
+                    "recipient": tx["sender"],
                     "amount": bonus
                 }]
             return []
 
         self.contracts.append(bonus_for_large_transaction)
-
-        # Load chain dari file jika ada
-        self.load_chain()
 
     def hash_block(self, block):
         if isinstance(block, str):
@@ -76,16 +80,13 @@ class Blockchain:
         self.current_transactions = []
         self.chain.append(block)
 
-        # Simpan ke file
         self.save_chain()
-
         return block
 
     def add_transaction(self, sender, recipient, amount):
         if amount <= 0:
             raise ValueError("Jumlah transaksi tidak valid (harus lebih dari 0)")
 
-        # Jika reward dari sistem (sender == "0"), jangan hash
         sender_hashed = sender if sender == "0" else hashlib.sha256(sender.encode()).hexdigest()
         recipient_hashed = recipient if recipient == "0" else hashlib.sha256(recipient.encode()).hexdigest()
 
@@ -97,7 +98,7 @@ class Blockchain:
 
         self.current_transactions.append(transaction)
 
-        # Smart contract
+        # Jalankan smart contracts
         for contract in self.contracts:
             try:
                 additional = contract(transaction)
@@ -106,20 +107,24 @@ class Blockchain:
             except Exception as e:
                 print(f"Smart contract error: {e}")
 
-        # Simpan log transaksi
+        # Pastikan folder log ada dan simpan transaksi
+        os.makedirs("transaction_log", exist_ok=True)
         with open("transaction_log/transactions.log", "a") as f:
             f.write(json.dumps(transaction) + "\n")
 
         return self.last_block['index'] + 1
 
     def save_chain(self):
+        os.makedirs("transaction_chain", exist_ok=True)
         with open("transaction_chain/blockchain.json", "w") as f:
             json.dump(self.chain, f, indent=4)
 
     def load_chain(self):
-        if os.path.exists("transaction_chain/blockchain.json"):
+        try:
             with open("transaction_chain/blockchain.json", "r") as f:
                 self.chain = json.load(f)
+        except FileNotFoundError:
+            self.chain = []
 
     @property
     def last_block(self):

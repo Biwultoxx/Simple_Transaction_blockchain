@@ -1,4 +1,4 @@
-<?php include 'config.php'; ?>
+<?php include 'Config/config.php'; ?>
 <form method="POST">
     <input name="username" required>
     <input name="password" type="password" required>
