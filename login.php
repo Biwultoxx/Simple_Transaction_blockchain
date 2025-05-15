@@ -43,9 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 12px;
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
             width: 350px;
+            text-align: center;
         }
         h2 {
-            text-align: center;
             margin-top: 0;
             color: #2c3e50;
         }
@@ -57,23 +57,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 6px;
             box-sizing: border-box;
         }
-        button {
-            width: 100%;
-            padding: 12px;
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .button-group button,
+        .button-group a {
+            flex: 1;
+            padding: 11px;
             background: #2980b9;
             border: none;
             color: white;
-            font-size: 16px;
+            font-size: 14px;
             border-radius: 6px;
             cursor: pointer;
+            text-decoration: none;
+            text-align: center;
         }
-        button:hover {
+        .button-group button:hover,
+        .button-group a:hover {
             background: #1f6391;
         }
         .error {
             color: red;
-            text-align: center;
             margin-bottom: 10px;
+        }
+        @media (max-width: 400px) {
+            .button-group {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -86,7 +99,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form method="POST">
             <input name="username" type="text" placeholder="Username" required>
             <input name="password" type="password" placeholder="Password" required>
-            <button type="submit">Masuk</button>
+            <div class="button-group">
+                <button type="submit">Masuk</button>
+                <a href="register.php">Daftar</a>
+            </div>
         </form>
     </div>
 </body>

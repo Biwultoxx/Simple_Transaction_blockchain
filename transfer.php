@@ -1,4 +1,4 @@
-<?php include 'Config/session.php'; include 'Config/config.php' ?>
+<?php include 'Config/session.php'; include 'Config/config.php'; ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -59,12 +59,25 @@
 <body>
     <div class="transfer-box">
         <h2>Transfer Uang</h2>
-        <form action="process_transfer.php" method="POST">
-            <input name="recipient" type="text" placeholder="Nama Penerima" required>
+        <form id="transferForm" action="process_transfer.php" method="POST">
+            <input name="recipient" id="recipientInput" type="text" placeholder="Nama Penerima" required>
             <input name="amount" type="number" step="100" placeholder="Jumlah (Rp)" required>
+            <input type="hidden" id="currentUser" value="<?= htmlspecialchars($_SESSION['username']) ?>">
             <button type="submit">Kirim</button>
         </form>
         <a href="index.php">← Kembali ke Beranda</a>
     </div>
+
+    <script>
+        document.getElementById('transferForm').addEventListener('submit', function(e) {
+            const currentUser = document.getElementById('currentUser').value.trim().toLowerCase();
+            const recipient = document.getElementById('recipientInput').value.trim().toLowerCase();
+
+            if (currentUser === recipient) {
+                alert("❌ Anda tidak bisa mentransfer ke diri sendiri!");
+                e.preventDefault(); // hentikan pengiriman form
+            }
+        });
+    </script>
 </body>
 </html>

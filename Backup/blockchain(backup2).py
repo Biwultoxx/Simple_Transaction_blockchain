@@ -1,12 +1,13 @@
 import sys
 import hashlib
 import json
-import os
 from time import time
 from uuid import uuid4
+
 from flask import Flask, request, jsonify
 
-class Blockchain:
+
+class Blockchain(object):
     difficulty_target = "0000"
 
     def __init__(self):
@@ -15,36 +16,28 @@ class Blockchain:
         self.current_transactions = []
         self.contracts = []
 
-        # Buat folder untuk penyimpanan jika belum ada
-        os.makedirs("transaction_chain", exist_ok=True)
-        os.makedirs("transaction_log", exist_ok=True)
+        # Genesis block
+        genesis_hash = self.hash_block("hash_block_pertama")
+        self.append_block(
+            hash_of_previous_block=genesis_hash,
+            nonce=self.proof_of_work(0, genesis_hash, [])
+        )
 
-        # Load chain dari file jika ada
-        self.load_chain()
-
-        # Jika chain kosong, buat genesis block
-        if not self.chain:
-            genesis_hash = self.hash_block("hash_block_pertama")
-            self.append_block(
-                hash_of_previous_block=genesis_hash,
-                nonce=self.proof_of_work(0, genesis_hash, [])
-            )
-
-        # Smart contract: bonus transaksi besar
+        # 📌 Smart Contract Bonus Berjenjang
         def bonus_for_large_transaction(tx):
             bonus = 0
             amount = tx.get("amount", 0)
-            if amount > 9999:
-                bonus = 1000
-            elif amount > 4999:
-                bonus = 500
-            elif amount > 999:
-                bonus = 100
+            if amount > 1000:
+                bonus = 50
+            elif amount > 500:
+                bonus = 20
+            elif amount > 100:
+                bonus = 5
 
             if bonus > 0:
                 return [{
                     "sender": "0",
-                    "recipient": tx["sender"],
+                    "recipient": tx["sender"],  # Bonus ke pengirim
                     "amount": bonus
                 }]
             return []
@@ -79,14 +72,10 @@ class Blockchain:
 
         self.current_transactions = []
         self.chain.append(block)
-
-        self.save_chain()
         return block
 
     def add_transaction(self, sender, recipient, amount):
-        if amount <= 0:
-            raise ValueError("Jumlah transaksi tidak valid (harus lebih dari 0)")
-
+        # Jika reward dari sistem (sender == "0"), jangan hash
         sender_hashed = sender if sender == "0" else hashlib.sha256(sender.encode()).hexdigest()
         recipient_hashed = recipient if recipient == "0" else hashlib.sha256(recipient.encode()).hexdigest()
 
@@ -95,46 +84,29 @@ class Blockchain:
             'recipient': recipient_hashed,
             'amount': amount
         }
-
         self.current_transactions.append(transaction)
 
         # Jalankan smart contracts
         for contract in self.contracts:
             try:
-                additional = contract(transaction)
-                if isinstance(additional, list):
-                    self.current_transactions.extend(additional)
+                additional_transactions = contract(transaction)
+                if isinstance(additional_transactions, list):
+                    self.current_transactions.extend(additional_transactions)
             except Exception as e:
                 print(f"Smart contract error: {e}")
 
-        # Pastikan folder log ada dan simpan transaksi
-        os.makedirs("transaction_log", exist_ok=True)
-        with open("transaction_log/transactions.log", "a") as f:
-            f.write(json.dumps(transaction) + "\n")
-
         return self.last_block['index'] + 1
-
-    def save_chain(self):
-        os.makedirs("transaction_chain", exist_ok=True)
-        with open("transaction_chain/blockchain.json", "w") as f:
-            json.dump(self.chain, f, indent=4)
-
-    def load_chain(self):
-        try:
-            with open("transaction_chain/blockchain.json", "r") as f:
-                self.chain = json.load(f)
-        except FileNotFoundError:
-            self.chain = []
 
     @property
     def last_block(self):
         return self.chain[-1]
 
 
-# ---------------- Flask Server ----------------
+# ------------------ Flask Web Server ------------------ #
 
 app = Flask(__name__)
 node_identifier = str(uuid4()).replace('-', '')
+
 blockchain = Blockchain()
 
 @app.route('/blockchain', methods=['GET'])
@@ -145,18 +117,12 @@ def full_chain():
     }
     return jsonify(response), 200
 
-@app.route('/mining', methods=['POST'])
+@app.route('/mining', methods=['GET'])
 def mine_block():
-    data = request.get_json()
-    username = data.get('username')  # Ambil username dari PHP
-
-    if not username:
-        return jsonify({'error': 'Username is required'}), 400
-
     blockchain.add_transaction(
         sender='0',
-        recipient=username,
-        amount=500
+        recipient=node_identifier,
+        amount=1
     )
 
     last_block = blockchain.last_block
@@ -166,7 +132,7 @@ def mine_block():
     block = blockchain.append_block(nonce, last_block_hash)
 
     response = {
-        'message': f'Block baru telah ditambang oleh {username}',
+        'message': 'Block baru telah ditambang',
         'index': block['index'],
         'hash_of_previous_block': block['hash_of_previous_block'],
         'nonce': block['nonce'],
@@ -177,19 +143,18 @@ def mine_block():
 @app.route('/transaction/new', methods=['POST'])
 def new_transaction():
     values = request.get_json()
-    required = ['sender', 'recipient', 'amount']
-    if not all(k in values for k in required):
-        return jsonify({'error': 'Missing fields'}), 400
+    required_fields = ['sender', 'recipient', 'amount']
+    if not all(k in values for k in required_fields):
+        return 'Missing fields', 400
 
-    try:
-        index = blockchain.add_transaction(
-            sender=values['sender'],
-            recipient=values['recipient'],
-            amount=float(values['amount'])
-        )
-        return jsonify({'message': f'Transaksi akan ditambahkan ke blok {index}'}), 201
-    except ValueError as ve:
-        return jsonify({'error': str(ve)}), 400
+    index = blockchain.add_transaction(
+        values['sender'],
+        values['recipient'],
+        values['amount']
+    )
+
+    response = {'message': f'Transaksi akan ditambahkan ke blok {index}'}
+    return jsonify(response), 201
 
 if __name__ == '__main__':
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 5000
