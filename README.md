@@ -17,7 +17,7 @@ Aplikasi ini adalah sistem web sederhana untuk melakukan transfer uang antar pen
 
 ## 📦 Teknologi Digunakan
 
-### Backend Web (PHP)
+### Backend Web (XAMPP)
 - PHP 7+
 - MySQL (untuk user & saldo)
 - Session-based Authentication
@@ -36,3 +36,42 @@ Aplikasi ini adalah sistem web sederhana untuk melakukan transfer uang antar pen
 git clone https://github.com/namamu/blockchain-transfer-app.git
 cd blockchain-transfer-app
 
+```
+### 2. Install Requirements
+
+```bash 
+pip install -r requirements.txt
+```
+
+### 3. Konfigurasi DB 
+
+```bash 
+CREATE DATABASE transfer_app;
+
+USE transfer_app;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    balance DOUBLE DEFAULT 0
+);
+
+CREATE TABLE transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sender VARCHAR(50),
+    recipient VARCHAR(50),
+    amount DOUBLE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 4. Jalankan Backend Python
+
+```bash 
+### 2. Install Requirements
+
+```bash 
+python blockchain_api.py
+```
+### Buka pada http://localhost:80
