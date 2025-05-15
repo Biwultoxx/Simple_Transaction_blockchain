@@ -1,4 +1,8 @@
-Tugas Digital Asset Semester 4
+### Tugas Digital Asset Semester 4
+Nama : 
+- Bima Aditya A.G
+- Priska Antonia W.O
+- Elisa Siti Va'iya
 
 # 💸 Aplikasi Pengiriman Uang Berbasis Blockchain Sederhana
 
