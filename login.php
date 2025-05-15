@@ -32,10 +32,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-family: 'Segoe UI', sans-serif;
             background: #ecf0f1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 22px;
         }
         .login-box {
             background: white;
@@ -91,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
+    <h1>Aplikasi Pengiriman Uang Berbasis Blockchain</h1>
     <div class="login-box">
         <h2>Login</h2>
         <?php if (isset($error)): ?>

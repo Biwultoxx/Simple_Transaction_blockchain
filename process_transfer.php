@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     $conn->commit();
-                    $resultMessage = "Transfer berhasil. Bonus: Rp " . number_format($bonus, 0, ',', '.');
+                    $resultMessage = "Transfer berhasil.  Kamu mendapat Bonus Transaksi: Rp " . number_format($bonus, 0, ',', '.');
                 } catch (Exception $e) {
                     $conn->rollback();
                     $resultMessage = "Gagal: " . $e->getMessage();
