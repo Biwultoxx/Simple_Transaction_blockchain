@@ -73,9 +73,6 @@ CREATE TABLE transactions (
 ### 4. Jalankan Backend Python
 
 ```bash 
-### 2. Install Requirements
-
-```bash 
 python blockchain_api.py
 ```
 ### Buka pada http://localhost:80
