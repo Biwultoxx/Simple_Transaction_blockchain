@@ -37,8 +37,8 @@ Aplikasi ini adalah sistem web sederhana untuk melakukan transfer uang antar pen
 ### 1. Clone Repositori
 
 ```bash
-git clone https://github.com/namamu/blockchain-transfer-app.git
-cd blockchain-transfer-app
+git clone https://github.com/Biwultoxx/Simple_Transaction_blockchain.git
+cd Simple_Transaction_blockchain
 
 ```
 ### 2. Install Requirements
@@ -73,6 +73,6 @@ CREATE TABLE transactions (
 ### 4. Jalankan Backend Python
 
 ```bash 
-python blockchain_api.py
+python blockchain.py
 ```
 ### Buka pada http://localhost:80
