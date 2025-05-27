@@ -75,4 +75,4 @@ CREATE TABLE transactions (
 ```bash 
 python blockchain.py
 ```
-### Buka pada http://localhost:80
+### 5. Buka pada http://localhost:80
